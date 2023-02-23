@@ -10,6 +10,10 @@ var eastAsiaData = [];
 var northAmericaData = [];
 var lineChartData;
 
+// defining color scheme
+// var res = ["South Asia", "Europe & Central Asia", "Middle East & North Africa", "Sub-Saharan Africa", "Latin America & Caribbean",
+// "East Asia & Pacific", "North America"] 
+
 document.addEventListener('DOMContentLoaded', function () {
     // Hint: create or set your svg element inside this function
      
@@ -60,48 +64,57 @@ document.addEventListener('DOMContentLoaded', function () {
     const innerHeight = height - margin.top - margin.bottom;
 
     const selectedAttribute = document.getElementById('attribute-select').value;
-
     var slider = document.getElementById("opacity-control");
-    console.log(slider.value);
 
-    // set start and end dates for x axis
-    const startYear = new Date(1980, 0, 0, 0, 0, 0, 0);
-    const endYear = new Date(2014, 0, 0, 0, 0, 0, 0);
-    console.log(lineChartData);
-    // get max female employment rate for current country
-    var maxAttrValue = d3.max(lineChartData, function(d) { return d[selectedAttribute]})
+    const sumstat = d3.group(lineChartData, d => d.region); // nest function allows to group the calculation per level of a factor
 
-    const xScale = d3.scaleTime()
-                    .domain([startYear, endYear]) // data space
-                    .range([0, innerWidth]); // pixel space
+    console.log(sumstat)
+
+    // defining color scheme
+    var color = d3.scaleOrdinal()
+    .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
+
+    const startYear = new Date(1990, 0, 0, 0, 0, 0, 0);
+    const endYear = new Date(2023, 0, 0, 0, 0, 0, 0);
+
+    const xScale = d3.scaleLinear()
+        .domain([1980, 2015]) // data space
+        .range([ 0, innerWidth ]);
 
     const yScale = d3.scaleLinear()
-                    .domain([0, maxAttrValue]) // data space
+                    .domain([0, d3.max(lineChartData, function(d) { return d[selectedAttribute]; })]) // data space
                     .range([innerHeight, 0 ]); // pixel space
+
     const g = svg.append('g')
     .attr('transform', 'translate('+margin.left+', '+margin.top+')');;
-    const yAxis = d3.axisLeft(yScale);
 
     // defining the x-axis and y-axis
-    g.append('g').call(yAxis);
-    const xAxis = d3.axisBottom(xScale);
-    g.append('g').call(xAxis)
-                    .attr('transform',`translate(0,${innerHeight})`)
-    
-    g.selectAll("path")
-    .datum(lineChartData)
-    .join(
+    g.append('g').call(d3.axisLeft(yScale));
+
+    const xAxis = d3.axisBottom(xScale).ticks(10);
+    g.append('g').call(xAxis).attr('transform',`translate(0,${innerHeight})`);
+
+
+    svg.selectAll(".line")
+      .data(sumstat)
+      .join(
         enter => enter.append("path").attr("class", "line"),
         update => update,
-        exit => exit.remove()
+        exit => exit
+        .style('fill','red')
+        .call(exit => exit.transition()
+                        //   .attr('y',120)
+                          .remove())
     )
-    .attr("fill", "none")
-    .attr("stroke", "steelblue")
-    .attr("stroke-width", 1.5)
-    .attr("d", d3.line()
-                .x(function(d) { return xScale(new Date(d.year, 0, 0, 0, 0, 0, 0)) })
-                .y(function(d) { return yScale(d[selectedAttribute]) })
-            )
+        .attr("fill", "none")
+        .attr("stroke", function(d){ return color(d[0]) })
+        .attr("stroke-width", 1.5)
+        .attr("d", function(d){
+          return d3.line()
+            .x(function(d) { return xScale(d.year); })
+            .y(function(d) { return yScale(d[selectedAttribute]); })
+            (d[1])
+        })
 
  }
 
@@ -115,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("check8").checked = true;
         document.getElementById("check9").checked = true;
     }
-    getDataToDisplay();
+    drawLineChart();
  }
 
  function deselectAll() {
@@ -128,28 +141,31 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("check8").checked = false;
         document.getElementById("check9").checked = false;
     }
-    lineChartData = [];
+    drawLineChart();
  }
 
  function splitGlobalDataIntoRegions() {
     globalDevelopmentData.forEach(function (item) {
         let country = item["country"];
-        let region = worldBankRegionMap.get(country);
-        if (region == "South Asia") {
-            southAsiaData.push(item);
-        } else if (region == "Europe & Central Asia") {
-            euCentralAsiaData.push(item);
-        } else if (region == "Middle East & North Africa") {
-            midEastData.push(item);
-        } else if (region == "Sub-Saharan Africa") {
-            africaData.push(item);
-        } else if (region == "Latin America & Caribbean") {
-            caribbeanData.push(item);
-        } else if (region == "East Asia & Pacific") {
-            eastAsiaData.push(item);
-        } else if (region == "North America") {
-            northAmericaData.push(item);
-        }    
+        if (item["year"] > 1980 && item["year"] < 2013) {
+            let region = worldBankRegionMap.get(country);
+            item["region"] = region;
+            if (region == "South Asia") {
+                southAsiaData.push(item);
+            } else if (region == "Europe & Central Asia") {
+                euCentralAsiaData.push(item);
+            } else if (region == "Middle East & North Africa") {
+                midEastData.push(item);
+            } else if (region == "Sub-Saharan Africa") {
+                africaData.push(item);
+            } else if (region == "Latin America & Caribbean") {
+                caribbeanData.push(item);
+            } else if (region == "East Asia & Pacific") {
+                eastAsiaData.push(item);
+            } else if (region == "North America") {
+                northAmericaData.push(item);
+            }  
+        }
     });      
 }
 
