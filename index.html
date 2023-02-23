@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <title>Homework #3: D3 Joins - CSE 578 - Spring 2023</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" />
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="js/main.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/styles.css" />
+    </head>
+    <body>
+        <div class="myContainer">
+            <h2 class="text-center">Homework #3: D3 Joins</h2>
+            <h3 class="text-center">Sushmita Mallick - sushmita@asu.edu</h3>
+            <hr>
+            <div class="row">
+                <div class="col-md-3">
+                        <h5 class="text-center">Control Panel</h3>
+                </div>
+                <div class="col-md-9">
+                    <h5 class="text-center">Trend over the years</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div id="control-panel" class="well">
+                        <div id="global-attribute">
+                            <select class="form-select" aria-label="Default select example" id="attribute-select" onchange="drawLineChart()">
+                                <option selected>Select an attribute</option>
+                                <option value="birth_rate">Birth Rate</option>
+                                <option value="death_rate">death_rate</option>
+                                <option value="fertility_rate">fertility_rate</option>
+                                <option value="life_exp_female">life_exp_female</option>
+                                <option value="life_exp_male">life_exp_male</option>
+                                <option value="life_exp_total">life_exp_total</option>
+                                <option value="pop_growth">pop_growth</option>
+                                <option value="total_growth">total_growth</option>
+                                <option value="cell_subs">cell_subs</option>
+                                <option value="cell_subs_per_100">cell_subs_per_100</option>
+                              </select>
+                        </div>
+                        <div id="global-attribute">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="all" id="check1" onchange="selectAll()">
+                                <label class="form-check-label" for="check1">
+                                Select All
+                                </label>
+                              </div>
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="none" id="check2" onchange="deselectAll()">
+                                <label class="form-check-label" for="check2">
+                                Deselect All
+                                </label>
+                              </div>
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="south_asia" id="check3" onchange="getDataToDisplay()">
+                                <label class="form-check-label" for="check3">
+                                South Asia
+                                </label>
+                              </div>
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="eu_central_asia" id="check4" onchange="getDataToDisplay()">
+                                <label class="form-check-label" for="check4">
+                                Europe & Central Asia
+                                </label>
+                              </div>
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="mid_east" id="check5" onchange="getDataToDisplay()">
+                                <label class="form-check-label" for="check5">
+                                    Middle East & North Africa
+                                </label>
+                              </div>
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="africa" id="check6" onchange="getDataToDisplay()">
+                                <label class="form-check-label" for="check6">
+                                    Sub-Saharan Africa
+                                </label>
+                              </div>
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="caribbean" id="check7" onchange="getDataToDisplay()">
+                                <label class="form-check-label" for="check7">
+                                    Latin America & Caribbean
+                                </label>
+                              </div>
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="east_asia" id="check8" onchange="getDataToDisplay()">
+                                <label class="form-check-label" for="check8">
+                                    East Asia & Pacific
+                                </label>
+                              </div>
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="north_america" id="check9" onchange="getDataToDisplay()">
+                                <label class="form-check-label" for="check9">
+                                    North America
+                                </label>
+                              </div>
+                        </div>
+                        <div id="opacity">
+                            <label for="opacity-control" class="form-label">Opacity</label>
+                            <input type="range" class="form-range" min="20" max="100" id="opacity-control">
+                        </div>
+                        <div id="play">
+                            <button type="button" id="play-button" class="btn">Play</button>
+                        </div>                          
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div id="chart-panel" class="well">
+                        <svg>
+                    
+                        </svg>
+                    </div>
+                </div>
+            </div>
+    </body>
+</html> 
