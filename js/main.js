@@ -1,13 +1,13 @@
 var worldBankRegionMap = new Map();
 var globalDevelopmentData;
 var worldBankRegionMap;
-var southAsiaData = new Map();
-var euCentralAsiaData = new Map();
-var midEastData = new Map();
-var africaData = new Map();
-var caribbeanData = new Map();
-var eastAsiaData = new Map();
-var northAmericaData = new Map();
+var southAsiaData = [];
+var euCentralAsiaData = [];
+var midEastData = [];
+var africaData = [];
+var caribbeanData = [];
+var eastAsiaData = [];
+var northAmericaData = [];
 var lineChartData;
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
  });
 
  function drawLineChart() {
+    getDataToDisplay();
     const svg = d3.select('svg');
     // get the width and height of the SVG
     const width = +svg.style('width').replace('px','');
@@ -59,20 +60,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const innerHeight = height - margin.top - margin.bottom;
 
     const selectedAttribute = document.getElementById('attribute-select').value;
-    console.log(selectedAttribute);
 
     var slider = document.getElementById("opacity-control");
     console.log(slider.value);
 
-    // create the dataset you want to display
-    lineChartData = getDataToDisplay();
-
     // set start and end dates for x axis
     const startYear = new Date(1980, 0, 0, 0, 0, 0, 0);
     const endYear = new Date(2014, 0, 0, 0, 0, 0, 0);
-
+    console.log(lineChartData);
     // get max female employment rate for current country
-    var maxAttrValue = d3.max(lineChartData, function(d) { return d["birth_rate"]})
+    var maxAttrValue = d3.max(lineChartData, function(d) { return d[selectedAttribute]})
 
     const xScale = d3.scaleTime()
                     .domain([startYear, endYear]) // data space
@@ -92,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .attr('transform',`translate(0,${innerHeight})`)
     
     g.selectAll("path")
-    .data([lineChartData])
+    .datum(lineChartData)
     .join(
         enter => enter.append("path").attr("class", "line"),
         update => update,
@@ -103,10 +100,8 @@ document.addEventListener('DOMContentLoaded', function () {
     .attr("stroke-width", 1.5)
     .attr("d", d3.line()
                 .x(function(d) { return xScale(new Date(d.year, 0, 0, 0, 0, 0, 0)) })
-                .y(function(d) { return yScale(d["birth_rate"]) })
+                .y(function(d) { return yScale(d[selectedAttribute]) })
             )
-
-
 
  }
 
@@ -137,45 +132,23 @@ document.addEventListener('DOMContentLoaded', function () {
  }
 
  function splitGlobalDataIntoRegions() {
-
     globalDevelopmentData.forEach(function (item) {
         let country = item["country"];
         let region = worldBankRegionMap.get(country);
         if (region == "South Asia") {
-            if (!southAsiaData.has(country)) {
-                southAsiaData.set(country, [])
-            }
-            southAsiaData.get(country).push(item);
+            southAsiaData.push(item);
         } else if (region == "Europe & Central Asia") {
-            if (!euCentralAsiaData.has(country)) {
-                euCentralAsiaData.set(country, [])
-            }
-            euCentralAsiaData.get(country).push(item);
+            euCentralAsiaData.push(item);
         } else if (region == "Middle East & North Africa") {
-            if (!midEastData.has(country)) {
-                midEastData.set(country, [])
-            }
-            midEastData.get(country).push(item);
+            midEastData.push(item);
         } else if (region == "Sub-Saharan Africa") {
-            if (!africaData.has(country)) {
-                africaData.set(country, [])
-            }
-            africaData.get(country).push(item);
+            africaData.push(item);
         } else if (region == "Latin America & Caribbean") {
-            if (!caribbeanData.has(country)) {
-                caribbeanData.set(country, [])
-            }
-            caribbeanData.get(country).push(item);
+            caribbeanData.push(item);
         } else if (region == "East Asia & Pacific") {
-            if (!eastAsiaData.has(country)) {
-                eastAsiaData.set(country, [])
-            }
-            eastAsiaData.get(country).push(item);
+            eastAsiaData.push(item);
         } else if (region == "North America") {
-            if (!northAmericaData.has(country)) {
-                northAmericaData.set(country, [])
-            }
-            northAmericaData.get(country).push(item);
+            northAmericaData.push(item);
         }    
     });      
 }
@@ -185,42 +158,27 @@ function getDataToDisplay() {
     document.getElementById("check2").checked = false
 
     // initialise data
-    let data = []
+    lineChartData = []
     if (document.getElementById("check3").checked) {
-        southAsiaData.forEach((val, key, map) => {
-            data = data.concat(val);
-        })
+        lineChartData = lineChartData.concat(southAsiaData);
     }
     if (document.getElementById("check4").checked) {
-        euCentralAsiaData.forEach((val, key, map) => {
-            data = data.concat(val);
-        })
+        lineChartData = lineChartData.concat(euCentralAsiaData);
     }
     if (document.getElementById("check5").checked) {
-        midEastData.forEach((val, key, map) => {
-            data = data.concat(val);
-        })
+        lineChartData = lineChartData.concat(midEastData);
     }
     if (document.getElementById("check6").checked) {
-        africaData.forEach((val, key, map) => {
-            data = data.concat(val);
-        })
+        lineChartData = lineChartData.concat(africaData);
     }
     if (document.getElementById("check7").checked) {
-        caribbeanData.forEach((val, key, map) => {
-            data = data.concat(val);
-        })
+        lineChartData = lineChartData.concat(caribbeanData);
     }
     if (document.getElementById("check8").checked) {
-        eastAsiaData.forEach((val, key, map) => {
-            data = data.concat(val);
-        })
+        lineChartData = lineChartData.concat(eastAsiaData);
     }
     if (document.getElementById("check9").checked) {
-        northAmericaData.forEach((val, key, map) => {
-            data = data.concat(val);
-        })
+        lineChartData = lineChartData.concat(northAmericaData);
     }
-    console.log(data.length)
-    return globalDevelopmentData;
+    console.log(lineChartData.length)
 }

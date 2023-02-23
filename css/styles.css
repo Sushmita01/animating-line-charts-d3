@@ -25,9 +25,6 @@ svg {
 #chart-panel {
     background-color: grey;
 }
-label {
-    /* font: 1rem 'Fira Sans', sans-serif; */
-}
 
 #opacity-control {
     margin: 0.4rem;
