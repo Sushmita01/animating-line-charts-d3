@@ -9,6 +9,16 @@ var caribbeanData = [];
 var eastAsiaData = [];
 var northAmericaData = [];
 var lineChartData;
+var lineOpacity = "0.25";
+var lineOpacityHover = "0.85";
+var otherLinesOpacityHover = "0.1";
+var lineStroke = "2px";
+
+var circleOpacity = '0.85';
+var circleOpacityOnLineHover = "0.25"
+var circleRadius = 3;
+var circleRadiusHover = 6;
+var duration = 250;
 
 // defining color scheme
 // var res = ["South Asia", "Europe & Central Asia", "Middle East & North Africa", "Sub-Saharan Africa", "Latin America & Caribbean",
@@ -66,55 +76,144 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectedAttribute = document.getElementById('attribute-select').value;
     var slider = document.getElementById("opacity-control");
 
-    const sumstat = d3.group(lineChartData, d => d.region); // nest function allows to group the calculation per level of a factor
+    let grouped_by_country = d3.group(lineChartData, d => d.country); // nest function allows to group the calculation per level of a factor
+    let sumstat = Array.from(grouped_by_country, ([name, values]) => ({ name, values }));
 
-    console.log(sumstat)
+    console.log(sumstat); 
 
     // defining color scheme
-    var color = d3.scaleOrdinal()
-    .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
 
-    const startYear = new Date(1990, 0, 0, 0, 0, 0, 0);
-    const endYear = new Date(2023, 0, 0, 0, 0, 0, 0);
+    /* Format Data */
+    var parseDate = d3.timeParse("%Y");
+    sumstat.forEach(function(d) { 
+    d.values.forEach(function(d) {
+        d.year = parseDate(d.year);
+    });
+    });
 
-    const xScale = d3.scaleLinear()
-        .domain([1980, 2015]) // data space
-        .range([ 0, innerWidth ]);
+    console.log("sumstat", sumstat);
 
-    const yScale = d3.scaleLinear()
-                    .domain([0, d3.max(lineChartData, function(d) { return d[selectedAttribute]; })]) // data space
-                    .range([innerHeight, 0 ]); // pixel space
+    var xScale = d3.scaleTime()
+    .domain(d3.extent(sumstat[0].values, d => d.year))
+    .range([0, innerWidth]);
+
+    let yScaleMaxValue = 0;
+    sumstat.forEach((countryMap) => {
+        let countryMax = d3.max(countryMap.values, d => d[selectedAttribute]);
+        if (countryMax > yScaleMaxValue) {
+            yScaleMaxValue = countryMax;
+        }
+    }) 
+
+    var yScale = d3.scaleLinear()
+    .domain([0, yScaleMaxValue])
+    .range([innerHeight, 0]);
+
 
     const g = svg.append('g')
     .attr('transform', 'translate('+margin.left+', '+margin.top+')');;
 
+    var xAxis = d3.axisBottom(xScale).ticks(10);
+    var yAxis = d3.axisLeft(yScale).ticks(10);
+
+    g.append("g")
+    .attr("class", "x axis")
+    .attr("transform", `translate(0, ${innerHeight})`)
+    .call(xAxis);
+
     // defining the x-axis and y-axis
-    g.append('g').call(d3.axisLeft(yScale));
+    g.append('g').attr("class", "y axis").call(yAxis).append('text')
+    .attr("y", 15)
+    .attr("transform", "rotate(-90)")
+    .attr("fill", "#000")
+    .text("Total values");
 
-    const xAxis = d3.axisBottom(xScale).ticks(10);
-    g.append('g').call(xAxis).attr('transform',`translate(0,${innerHeight})`);
 
+    var defs = svg.append("svg:defs");
 
-    svg.selectAll(".line")
-      .data(sumstat)
-      .join(
-        enter => enter.append("path").attr("class", "line"),
+    function marker(color) {
+
+        defs.append("svg:marker")
+            .attr("id", color.replace("#", ""))
+            .attr('viewBox', [0, 0, 20, 20])
+            .attr('refX', 10)
+            .attr('refY', 10)
+            .attr('markerWidth', 10)
+            .attr('markerHeight', 10)
+            .append('circle')
+            .attr('cx', 10)
+            .attr('cy', 10)
+            .attr('r', 5)
+            .style("stroke", "black")
+            .style("stroke-width", 2)
+            .attr("markerUnits", "userSpaceOnUse")
+            .style("fill", color);
+        
+        return "url(" + color + ")";
+    };
+
+    /* Add line into SVG */
+    var line = d3.line()
+            .x(d => xScale(d.year))
+            .y(d => yScale(d[selectedAttribute]))
+            .curve(d3.curveMonotoneX);
+
+  
+    let lines = svg.append('g')
+        .attr('class', 'lines');
+
+    lines.selectAll('.line-group')
+    .data(sumstat)
+    .join(
+        enter => enter.append('g')
+        .attr('class', 'line-group') 
+        .append('path')
+        .attr('class', 'line'),
         update => update,
         exit => exit
         .style('fill','red')
         .call(exit => exit.transition()
-                        //   .attr('y',120)
                           .remove())
     )
-        .attr("fill", "none")
-        .attr("stroke", function(d){ return color(d[0]) })
-        .attr("stroke-width", 1.5)
-        .attr("d", function(d){
-          return d3.line()
-            .x(function(d) { return xScale(d.year); })
-            .y(function(d) { return yScale(d[selectedAttribute]); })
-            (d[1])
-        })
+    .attr('d', d => line(d.values))
+    .style('stroke', (d, i) => {
+        return color(d.values[0].region);
+    })
+    .style('opacity', lineOpacity)
+    .style("stroke-width", lineStroke)
+    .style("fill", "none")
+    .attr('marker-end',  (d, i) => {
+        return marker(color(d.values[0].region));
+    })
+    .attr('transform', 'translate('+margin.left+', '+margin.top+')')
+
+    .on("mouseover", function(event, d) {
+      d3.selectAll('.line')
+					.style('opacity', otherLinesOpacityHover);
+      d3.selectAll('.circle')
+					.style('opacity', circleOpacityOnLineHover);
+      d3.select(this)
+        .style('opacity', lineOpacityHover)
+        .style("cursor", "pointer");
+
+        svg.append("text")
+        .attr("class", "title-text")
+        .style("fill", color(d.values[0].region))        
+        .text(d.name)
+        .attr("text-anchor", "middle")
+        .attr("x", innerWidth/2)
+        .attr("y", 5);
+    })
+  .on("mouseout", function(event, d) {
+      d3.selectAll(".line")
+					.style('opacity', lineOpacity);
+      d3.selectAll('.circle')
+					.style('opacity', circleOpacity);
+      d3.select(this)
+        .style("cursor", "none");
+
+    });
 
  }
 
@@ -197,4 +296,19 @@ function getDataToDisplay() {
         lineChartData = lineChartData.concat(northAmericaData);
     }
     console.log(lineChartData.length)
+}
+
+function getFilteredData(data) {
+    let country_year_map = new Map();
+    data.forEach((item => {
+        let curr_country = item.country;
+        let curr_year = item.year;
+        if (!country_year_map.has(curr_country)) {
+            country_year_map.set(curr_country, curr_year)
+        } else if (country_year_map.get(curr_country) < curr_year) {
+            country_year_map.set(curr_country, curr_year)
+        }
+    }));
+    let filteredData = data.filter(item => item.year == country_year_map.get(item.country));
+    return filteredData;
 }
