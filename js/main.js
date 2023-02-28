@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("sumstat", sumstat);
 
     var xScale = d3.scaleTime()
-    .domain(d3.extent(sumstat[0].values, d => d.year))
+    .domain([parseDate(1980), parseDate(2013)])
     .range([0, innerWidth]);
 
     let yScaleMaxValue = 0;
@@ -124,10 +124,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // defining the x-axis and y-axis
     g.append('g').attr("class", "y axis").call(yAxis).append('text')
-    .attr("y", 15)
+    .attr("y", -30)
+    .attr("x", -innerHeight/2)
     .attr("transform", "rotate(-90)")
     .attr("fill", "#000")
-    .text("Total values");
+    .text("Attribute value");
 
 
     var defs = svg.append("svg:defs");
@@ -149,9 +150,11 @@ document.addEventListener('DOMContentLoaded', function () {
             .style("stroke-width", 2)
             .attr("markerUnits", "userSpaceOnUse")
             .style("fill", color);
-        
+
+
         return "url(" + color + ")";
     };
+
 
     /* Add line into SVG */
     var line = d3.line()
@@ -163,14 +166,21 @@ document.addEventListener('DOMContentLoaded', function () {
     let lines = svg.append('g')
         .attr('class', 'lines');
 
-    lines.selectAll('.line-group')
-    .data(sumstat)
-    .join(
+    let lineGroup = lines.selectAll('.line-group')
+    .data(sumstat, d => d['name'])
+
+
+    lineGroup.join(
         enter => enter.append('g')
         .attr('class', 'line-group') 
         .append('path')
         .attr('class', 'line'),
-        update => update,
+        update => update
+        .transition()
+        .duration(750)
+        .attr('fill', "red")
+        .style("stroke-width", 5)
+        .style('stroke', "pink"),
         exit => exit
         .style('fill','red')
         .call(exit => exit.transition()
@@ -184,36 +194,57 @@ document.addEventListener('DOMContentLoaded', function () {
     .style("stroke-width", lineStroke)
     .style("fill", "none")
     .attr('marker-end',  (d, i) => {
-        return marker(color(d.values[0].region));
+        return marker(color(d.values[0].region))
     })
     .attr('transform', 'translate('+margin.left+', '+margin.top+')')
 
-    .on("mouseover", function(event, d) {
+    .on("mouseover", function(event, d, i) {
       d3.selectAll('.line')
 					.style('opacity', otherLinesOpacityHover);
       d3.selectAll('.circle')
 					.style('opacity', circleOpacityOnLineHover);
+     d3.selectAll('.country-labels')
+					.style('opacity', circleOpacityOnLineHover);
+      
       d3.select(this)
         .style('opacity', lineOpacityHover)
         .style("cursor", "pointer");
 
-        svg.append("text")
-        .attr("class", "title-text")
-        .style("fill", color(d.values[0].region))        
-        .text(d.name)
-        .attr("text-anchor", "middle")
-        .attr("x", innerWidth/2)
-        .attr("y", 5);
+        svg.selectAll('.line-text-' + d.name)
+        .style('opacity', lineOpacityHover)
+
+
     })
-  .on("mouseout", function(event, d) {
+  .on("mouseout", function(event, d, i) {
       d3.selectAll(".line")
 					.style('opacity', lineOpacity);
       d3.selectAll('.circle')
 					.style('opacity', circleOpacity);
+     d3.selectAll('line-text' + i)
+					.style('opacity', circleOpacity);
       d3.select(this)
         .style("cursor", "none");
 
+        svg.selectAll('.line-text-' + d.name)
+        .style('opacity', lineOpacity)
+
     });
+
+    let filteredData = getFilteredData(lineChartData)
+    console.log("filteredData", filteredData)
+
+    svg.selectAll(".lines")
+      .data(filteredData)
+      .enter()
+      .append("text")
+      .attr('class', (d,i) => { 
+        return "line-text-" +  d.country})
+      .attr("x", d => xScale(d.year))
+      .attr("y", d => yScale(d[selectedAttribute]) + 40)
+      .style('fill', (d) => color(d.region))
+      .attr("font-size", "12")
+      .style('opacity', lineOpacity)
+      .text((d)=>d.country)
 
  }
 
@@ -246,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
  function splitGlobalDataIntoRegions() {
     globalDevelopmentData.forEach(function (item) {
         let country = item["country"];
-        if (item["year"] > 1980 && item["year"] < 2013) {
+        if (item["year"] >= 1980 && item["year"] <= 2013) {
             let region = worldBankRegionMap.get(country);
             item["region"] = region;
             if (region == "South Asia") {
