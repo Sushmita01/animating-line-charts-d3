@@ -20,6 +20,7 @@ var circleRadius = 3;
 var circleRadiusHover = 6;
 var duration = 250;
 var axisTransitionDuration = 600;
+var dataEntryExitTransitionDuration = 600;
 
 // defining color scheme
 // var res = ["South Asia", "Europe & Central Asia", "Middle East & North Africa", "Sub-Saharan Africa", "Latin America & Caribbean",
@@ -164,11 +165,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     lineGroup.join(
         enter => {
-            return enter.append('g')
+         enter.append('g')
         .attr('class', 'line-group') 
         .append('path')
         .attr('class', 'line')
-        .style('opacity', lineOpacity)
+        .style('opacity', 0)
         .style("stroke-width", lineStroke)
         .style("fill", "none")
         .attr('marker-end',  (d, i) => {
@@ -178,66 +179,80 @@ document.addEventListener('DOMContentLoaded', function () {
         .style('stroke', (d, i) => {
                 return color(d.values[0].region);
             })
-    .attr('transform', 'translate('+margin.left+', '+margin.top+')')
+        .attr('transform', 'translate('+margin.left+', '+margin.top+')')
+
+        enter.call(enter => {
+
+            //fade in effect for new data lines
+            enter.selectAll('path')
+                    .transition()
+                    .delay(axisTransitionDuration)
+                    .duration(dataEntryExitTransitionDuration)
+                    .style('opacity', lineOpacity)
+        }
+        )
         },
-        update => {        
+        update => {    
+            
+        //rescales y axis on data update
         svg.selectAll(".yaxis")
         .transition().duration(axisTransitionDuration)
         .call(yAxis);
 
-        return update.call(update => {
+        update.call(update => {
 
+            //moves lines to correct position depending on new y axis
             update.selectAll('path')
                     .transition()
                     .duration(axisTransitionDuration)
-                    .style('stroke', "pink")
                     .attr('d', d => line(d.values))
         }
         )
         },
         exit => {
-
+            //rescales y axis on data update
             svg.selectAll(".yaxis")
             .transition().duration(axisTransitionDuration)
             .call(yAxis);
 
-            return exit.call(exit => {
+            exit.call(exit => {
+              
+            // //fade out effect for removed data labels
+            // exit.selectAll("text[className^='line-text']")
+            // .transition()
+            // .duration(dataEntryExitTransitionDuration)
+            // .style('opacity', 0)
+            // .end()                  // after the transition ends,
+       
 
-
-
-                // Animate the text value to size=0
-                exit.selectAll('text')
+            //fade out effect for removed data lines
+            exit.selectAll('path')
                     .transition()
-                    .duration(500)
-                    .style('stroke', "pink")
-                    .style('font-size','0em');
-                // Animate the rect's width to 0
-                exit.selectAll('path')
-                    .transition()
-                    .duration(500)
-                    .style('stroke', "pink")
-                    .style('fill', "pink")
+                    .duration(dataEntryExitTransitionDuration)
+                    .style('opacity', 0)
                     .end()                  // after the transition ends,
                     .then(() => {           // remove the elements in the
                         exit.remove();      // exit selection
                     });
             })
         }
-    )
+    );
 
+    d3.selectAll('path')
     .on("mouseover", function(event, d, i) {
       d3.selectAll('.line')
 					.style('opacity', otherLinesOpacityHover);
       d3.selectAll('.circle')
 					.style('opacity', otherLinesOpacityHover);
-    d3.selectAll("path[className^='line-text']")
+    d3.selectAll("text[className^='line-text']")
+                    .style("stroke", "pink")
 					.style('opacity', otherLinesOpacityHover);
       
       d3.select(this)
         .style('opacity', lineOpacityHover)
         .style("cursor", "pointer");
 
-        svg.selectAll('.line-text-' + d.name.hashCode())
+        d3.selectAll('.line-text-' + d.name.hashCode())
         .style('opacity', lineOpacityHover)
 
 
@@ -247,30 +262,81 @@ document.addEventListener('DOMContentLoaded', function () {
 					.style('opacity', lineOpacity);
       d3.selectAll('.circle')
 					.style('opacity', lineOpacity);
-     d3.selectAll("path[className^='line-text']")
+     d3.selectAll("text[className^='line-text']")
 					.style('opacity', lineOpacity);
       d3.select(this)
         .style("cursor", "none");
 
-        svg.selectAll('.line-text-' + d.name.hashCode())
+        d3.selectAll('.line-text-' + d.name.hashCode())
         .style('opacity', lineOpacity)
 
     });
 
-    let filteredData = getFilteredData(lineChartData)
+    let labelsData = getFilteredData(lineChartData)
+    let labelsGroup = d3.group(labelsData, d => d.country); 
+    let labelsByCountry = Array.from(labelsGroup, ([name, values]) => ({ name, values }));
+    
+    let linesText =  d3.select('svg').selectAll('.lines')
+    .selectAll('.data-labels')
+    .data(labelsByCountry, d => d['name'].hashCode())
 
-    svg.selectAll(".lines")
-      .data(filteredData)
-      .enter()
-      .append("text")
-      .attr('class', (d,i) => { 
-        return "line-text-" +  d.country.hashCode()})
-      .attr("x", d => xScale(d.year))
-      .attr("y", d => yScale(d[selectedAttribute]) + 40)
-      .style('fill', (d) => color(d.region))
-      .attr("font-size", "12")
-      .style('opacity', lineOpacity)
-      .text((d)=>d.country)
+    linesText
+      .join(
+        enter => {
+        console.log("enter", enter)
+        enter.append('g')
+        .attr('class', 'data-labels') 
+        .append("text")
+        .attr('class', (d,i) => {
+         "line-text-" +  d.values[0].country.hashCode()})
+        .attr("x", d => xScale(d.values[0].year))
+        .attr("y", d => yScale(d.values[0][selectedAttribute]) + 40)
+        .style('fill', (d) => color(d.values[0].region))
+        .attr("font-size", "12")
+        .style('opacity', 0)
+        .text((d)=>d.values[0].country)
+
+        enter.call(enter => {
+            //fade in effect for new data lines
+
+            enter.selectAll('text')
+                    .transition()
+                    .delay(axisTransitionDuration)
+                    .duration(dataEntryExitTransitionDuration)
+                    .style('opacity', lineOpacity)
+        }
+        )
+        },
+        update => {    
+
+            update.call(update => {
+                //moves lines to correct position depending on new y axis
+                console.log("update", update)
+                update.selectAll("text")
+                        .transition()
+                        .duration(axisTransitionDuration)
+                        .attr("x", d => xScale(d.values[0].year))
+                        .attr("y", d => yScale(d.values[0][selectedAttribute]) + 40)
+            }
+            )
+            },
+        exit => {
+            exit.call(exit => {
+                console.log("exited", exit)
+            //fade out effect for removed data labels
+            exit.selectAll("text")
+            .transition()
+            .duration(dataEntryExitTransitionDuration)
+            .style('opacity', 0)
+            .end()                  // after the transition ends,
+            .then(() => {           // remove the elements in the
+                exit.remove();      // exit selection
+            });
+
+            })
+        }
+        )
+      
 
 
   
@@ -365,8 +431,6 @@ function getFilteredData(data) {
     data.forEach((item => {
         let curr_country = item.country;
         let curr_year = item.year;
-        if (curr_year == null) {
-        }
         if (!country_year_map.has(curr_country)) {
             country_year_map.set(curr_country, curr_year)
         } else if (country_year_map.get(curr_country) < curr_year) {
@@ -374,6 +438,7 @@ function getFilteredData(data) {
         }
     }));
     let filteredData = data.filter(item => item.year == country_year_map.get(item.country));
+    console.log("filteredData", filteredData)
     return filteredData;
 }
 
