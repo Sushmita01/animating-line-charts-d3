@@ -11,8 +11,8 @@ var caribbeanData = [];
 var eastAsiaData = [];
 var northAmericaData = [];
 var lineChartData = [];
-var lineOpacity = "0.25";
-var lineOpacityHover = "0.85";
+var lineOpacity = "0.3";
+var lineOpacityHover = "0.6";
 var otherLinesOpacityHover = "0.1";
 var lineStroke = "2px";
 
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const width = +svg.style('width').replace('px','');
     const height = +svg.style('height').replace('px','');
     // adding padding around the chart
-    const margin = { top:50, bottom: 50, right: 50, left: 60 };
+    const margin = { top:50, bottom: 50, right: 100, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var xScale = d3.scaleTime()
     .domain([parseDate("1980"), parseDate("2013")])
-    .range([0, innerWidth - 50]);
+    .range([0, innerWidth]);
 
     let yScaleMaxValue = 0;
     sumstat.forEach((countryMap) => {
@@ -301,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .attr("y", d => yScale(d.values[0][selectedAttribute]) + yLabelOffset)
         .style('fill', (d) => color(d.values[0].region))
         .attr("font-size", "12")
+        .attr("font-weight", "900")
         .style('opacity', 0)
         .text((d)=>d.values[0].country)
 
@@ -464,6 +465,7 @@ String.prototype.hashCode = function() {
     return hash;
   }
 
+  //redraw when opacity changes
   function opacityChangeRedraw(e) {
     var slider = document.getElementById("opacity-control");
     lineOpacity = parseFloat(slider.value);
