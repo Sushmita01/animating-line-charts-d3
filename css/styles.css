@@ -4,11 +4,17 @@
     background-color: white;
 }
 svg {
-    width: 900px;
+    width: 950px;
     height: 650px;
     background-color: white;
     border: 1px solid lightgray;
     border-radius: 3px;
+}
+.col-md-3 {
+    width: 22%;
+}
+.col-md-9 {
+    width: 38%;
 }
 .well {
     border: 1px solid rgb(210, 216, 230);
@@ -31,7 +37,7 @@ svg {
 
 #global-attribute {
     padding-top: 10px;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
 }
 
 #attribute-select {
@@ -39,12 +45,12 @@ svg {
 }
 
 #region-select {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 #opacity {
-    padding-top: 10px;
+    padding-top: 5px;
     padding-bottom: 10px;
     width: 100%;
 }

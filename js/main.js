@@ -21,6 +21,8 @@ var circleRadiusHover = 6;
 var duration = 250;
 var axisTransitionDuration = 600;
 var dataEntryExitTransitionDuration = 600;
+var yLabelOffset = 40;
+var xLabelOffset = 55;
 
 // defining color scheme
 // var res = ["South Asia", "Europe & Central Asia", "Middle East & North Africa", "Sub-Saharan Africa", "Latin America & Caribbean",
@@ -84,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var xScale = d3.scaleTime()
     .domain([parseDate("1980"), parseDate("2013")])
-    .range([0, innerWidth]);
+    .range([0, innerWidth - 50]);
 
     let yScaleMaxValue = 0;
     sumstat.forEach((countryMap) => {
@@ -207,24 +209,32 @@ document.addEventListener('DOMContentLoaded', function () {
         )
         },
         exit => {
-            //rescales y axis on data update
-            svg.selectAll(".yaxis")
-            .transition().duration(axisTransitionDuration)
-            .call(yAxis);
 
-            exit.call(exit => {
+        lineGroup.selectAll('path')
+        .transition()
+        .duration(axisTransitionDuration)
+        .attr('d', d => line(d.values))
     
-            //fade out effect for removed data lines
-            exit.selectAll('path')
-                    .transition()
-                    .duration(dataEntryExitTransitionDuration)
-                    .style('opacity', 0)
-                    .end()                  // after the transition ends,
-                    .then(() => {           // remove the elements in the
-                        exit.remove();      // exit selection
-                    });
-            })
-        }
+        exit.call(exit => {
+
+        //fade out effect for removed data lines
+        exit.selectAll('path')
+                .transition()
+                .duration(dataEntryExitTransitionDuration)
+                .style('opacity', 0)
+                .end()                  // after the transition ends,
+                .then(() => {           // remove the elements in the
+                    exit.remove();      // exit selection
+                });
+
+        //rescales y axis on data update
+        svg.selectAll(".yaxis")
+        .transition()
+        .delay(dataEntryExitTransitionDuration)
+        .duration(axisTransitionDuration)
+        .call(yAxis);   
+        })
+    }
     );
 
     d3.selectAll('path')
@@ -242,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .style("cursor", "pointer");
 
         d3.selectAll('.line-text-' + d.name.hashCode())
-        .style('opacity', lineOpacityHover)
+        .style('opacity', lineOpacityHover) //TO-DO
 
 
     })
@@ -256,11 +266,9 @@ document.addEventListener('DOMContentLoaded', function () {
       d3.select(this)
         .style("cursor", "none");
 
-        d3.selectAll('.line-text-' + d.name.hashCode())
-        .style('opacity', lineOpacity)
-
     });
 
+    // Adding country labels to lines
     let labelsData = getFilteredData(lineChartData)
     let labelsGroup = d3.group(labelsData, d => d.country); 
     let labelsByCountry = Array.from(labelsGroup, ([name, values]) => ({ name, values }));
@@ -278,8 +286,8 @@ document.addEventListener('DOMContentLoaded', function () {
         .append("text")
         .attr('class', (d,i) => {
          "line-text-" +  d.name.hashCode()})
-        .attr("x", d => xScale(d.values[0].year))
-        .attr("y", d => yScale(d.values[0][selectedAttribute]) + 40)
+        .attr("x", d => xScale(d.values[0].year) + xLabelOffset)
+        .attr("y", d => yScale(d.values[0][selectedAttribute]) + yLabelOffset)
         .style('fill', (d) => color(d.values[0].region))
         .attr("font-size", "12")
         .style('opacity', 0)
@@ -304,8 +312,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 update.selectAll("text")
                         .transition()
                         .duration(axisTransitionDuration)
-                        .attr("x", d => xScale(d.values[0].year))
-                        .attr("y", d => yScale(d.values[0][selectedAttribute]) + 40)
+                        .attr("x", d => xScale(d.values[0].year) + xLabelOffset)
+                        .attr("y", d => yScale(d.values[0][selectedAttribute]) + yLabelOffset)
             }
             )
             },
@@ -455,7 +463,7 @@ String.prototype.hashCode = function() {
 				.style('opacity', lineOpacity);
     d3.selectAll('.circle')
 				.style('opacity', lineOpacity);
-    d3.selectAll("path[className^='line-text']")
+    d3.selectAll(".data-labels")
 					.style('opacity', lineOpacity);
 
   }
