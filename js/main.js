@@ -96,8 +96,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }) 
 
+    let yScaleMinValue;
+    sumstat.forEach((countryMap) => {
+        let countryMin = d3.min(countryMap.values, d => d[selectedAttribute]);
+        if (!yScaleMinValue || countryMin < yScaleMinValue) {
+            yScaleMinValue = countryMin;
+        }
+    }) 
+
+    yScaleMinValue = d3.min([yScaleMinValue, 0])
+
     var yScale = d3.scaleLinear()
-    .domain([0, yScaleMaxValue])
+    .domain([yScaleMinValue, yScaleMaxValue])
     .range([innerHeight, 0]);
 
 
@@ -123,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var defs = svg.append("svg:defs");
 
+    // adding circle markers which will be used in line ends
     function marker(color) {
 
         defs.append("svg:marker")
@@ -137,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .attr('cy', 10)
             .attr('r', 5)
             .style("stroke", "black")
-            .style("stroke-width", 2)
+            .style("stroke-width", 1)
             .attr("markerUnits", "userSpaceOnUse")
             .style("fill", color);
 
