@@ -19,6 +19,7 @@ var lineStroke = "2px";
 var circleRadius = 3;
 var circleRadiusHover = 6;
 var duration = 250;
+var axisTransitionDuration = 600;
 
 // defining color scheme
 // var res = ["South Asia", "Europe & Central Asia", "Middle East & North Africa", "Sub-Saharan Africa", "Latin America & Caribbean",
@@ -77,16 +78,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectedAttribute = document.getElementById('attribute-select').value;
     var slider = document.getElementById("opacity-control");
     lineOpacity = parseFloat(slider.value);
-    console.log(lineOpacity)
     lineOpacityHover = d3.max([lineOpacity + 0.3, 1]);
     otherLinesOpacityHover = d3.min([lineOpacity - 0.3, 0.1]);
 
     let grouped_by_country = d3.group(lineChartData, d => d.country); // nest function allows to group the calculation per level of a factor
     let sumstat = Array.from(grouped_by_country, ([name, values]) => ({ name, values }));
-
-    // defining color scheme
-
-    console.log("sumstat", sumstat);
 
     var xScale = d3.scaleTime()
     .domain([parseDate("1980"), parseDate("2013")])
@@ -184,22 +180,31 @@ document.addEventListener('DOMContentLoaded', function () {
             })
     .attr('transform', 'translate('+margin.left+', '+margin.top+')')
         },
-        update => {
-        console.log("updating..")
-        
+        update => {        
         svg.selectAll(".yaxis")
-        .transition().duration(500)
+        .transition().duration(axisTransitionDuration)
         .call(yAxis);
 
-        return update
-        .call(update => update.transition().delay(600).duration(2000)
-        .attr('fill', "red")
-        .style("stroke-width", 5)
-        .style('stroke', "pink"),
+        return update.call(update => {
+
+            update.selectAll('path')
+                    .transition()
+                    .duration(axisTransitionDuration)
+                    .style('stroke', "pink")
+                    .attr('d', d => line(d.values))
+        }
         )
         },
         exit => {
-            exit.call(exit => {
+
+            svg.selectAll(".yaxis")
+            .transition().duration(axisTransitionDuration)
+            .call(yAxis);
+
+            return exit.call(exit => {
+
+
+
                 // Animate the text value to size=0
                 exit.selectAll('text')
                     .transition()
@@ -217,9 +222,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         exit.remove();      // exit selection
                     });
             })
-
-            return exit.remove();
-
         }
     )
 
@@ -256,7 +258,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     let filteredData = getFilteredData(lineChartData)
-    console.log("filteredData", filteredData)
 
     svg.selectAll(".lines")
       .data(filteredData)
@@ -356,7 +357,6 @@ function getDataToDisplay() {
     if (document.getElementById("check9").checked) {
         lineChartData = lineChartData.concat(northAmericaData);
     }
-    console.log(lineChartData.length)
 
 }
 
@@ -389,4 +389,19 @@ String.prototype.hashCode = function() {
       hash = hash + chr; // Convert to 32bit integer
     }
     return hash;
+  }
+
+  function opacityChangeRedraw(e) {
+    var slider = document.getElementById("opacity-control");
+    lineOpacity = parseFloat(slider.value);
+    lineOpacityHover = d3.min([lineOpacity + 0.2, 1]);
+    otherLinesOpacityHover = d3.max([lineOpacity - 0.2, 0.1]);
+
+    d3.selectAll(".line")
+				.style('opacity', lineOpacity);
+    d3.selectAll('.circle')
+				.style('opacity', lineOpacity);
+    d3.selectAll("path[className^='line-text']")
+					.style('opacity', lineOpacity);
+
   }
