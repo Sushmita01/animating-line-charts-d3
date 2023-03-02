@@ -99,7 +99,7 @@
                         <hr/>
                         <div id="opacity">
                             <label for="opacity-control" class="form-label">Select Opacity</label>
-                            <input type="range" class="form-range" min="20" max="100" id="opacity-control">
+                            <input type="range" class="form-range" step=0.1 min=0.3 max=1 id="opacity-control" onchange="drawLineChart()">
                         </div>
                         <hr/>
                         <div id="play">

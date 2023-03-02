@@ -1,4 +1,6 @@
 var worldBankRegionMap = new Map();
+var parseDate = d3.timeParse("%Y");
+var color = d3.scaleOrdinal(d3.schemeCategory10);
 var globalDevelopmentData;
 var worldBankRegionMap;
 var southAsiaData = [];
@@ -8,14 +10,12 @@ var africaData = [];
 var caribbeanData = [];
 var eastAsiaData = [];
 var northAmericaData = [];
-var lineChartData;
+var lineChartData = [];
 var lineOpacity = "0.25";
 var lineOpacityHover = "0.85";
 var otherLinesOpacityHover = "0.1";
 var lineStroke = "2px";
 
-var circleOpacity = '0.85';
-var circleOpacityOnLineHover = "0.25"
 var circleRadius = 3;
 var circleRadiusHover = 6;
 var duration = 250;
@@ -30,8 +30,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Loading two CSV files and store them into two arrays.
     Promise.all([d3.csv('data/countries_regions.csv'),d3.csv('data/global_development.csv')])
          .then(function (values) {
-            countriesRegions = values[0];
-            globalDevelopment = values[1];
+            let countriesRegions = values[0];
+            let globalDevelopment = values[1];
+
             
             //Wrangling the data
             countriesRegions.forEach(d => {
@@ -39,11 +40,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     worldBankRegionMap.set(d["name"], d["World bank region"]);
                 }
             })
-                
+
             globalDevelopmentData = globalDevelopment.map(function(d) {
              return {
                 country: d.Country,
-                year: +d.Year,
+                year: parseDate(+d["Year"]),
                 birth_rate: +d["Data.Health.Birth Rate"],
                 death_rate: +d["Data.Health.Death Rate"],
                 fertility_rate: +d["Data.Health.Fertility Rate"],
@@ -75,27 +76,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const selectedAttribute = document.getElementById('attribute-select').value;
     var slider = document.getElementById("opacity-control");
+    lineOpacity = parseFloat(slider.value);
+    console.log(lineOpacity)
+    lineOpacityHover = d3.max([lineOpacity + 0.3, 1]);
+    otherLinesOpacityHover = d3.min([lineOpacity - 0.3, 0.1]);
 
     let grouped_by_country = d3.group(lineChartData, d => d.country); // nest function allows to group the calculation per level of a factor
     let sumstat = Array.from(grouped_by_country, ([name, values]) => ({ name, values }));
 
-    console.log(sumstat); 
-
     // defining color scheme
-    var color = d3.scaleOrdinal(d3.schemeCategory10);
-
-    /* Format Data */
-    var parseDate = d3.timeParse("%Y");
-    sumstat.forEach(function(d) { 
-    d.values.forEach(function(d) {
-        d.year = parseDate(d.year);
-    });
-    });
 
     console.log("sumstat", sumstat);
 
     var xScale = d3.scaleTime()
-    .domain([parseDate(1980), parseDate(2013)])
+    .domain([parseDate("1980"), parseDate("2013")])
     .range([0, innerWidth]);
 
     let yScaleMaxValue = 0;
@@ -118,12 +112,12 @@ document.addEventListener('DOMContentLoaded', function () {
     var yAxis = d3.axisLeft(yScale).ticks(10);
 
     g.append("g")
-    .attr("class", "x axis")
+    .attr("class", "xaxis")
     .attr("transform", `translate(0, ${innerHeight})`)
     .call(xAxis);
 
     // defining the x-axis and y-axis
-    g.append('g').attr("class", "y axis").call(yAxis).append('text')
+    g.append('g').attr("class", "yaxis").call(yAxis).append('text')
     .attr("y", -30)
     .attr("x", -innerHeight/2)
     .attr("transform", "rotate(-90)")
@@ -166,51 +160,82 @@ document.addEventListener('DOMContentLoaded', function () {
     let lines = svg.append('g')
         .attr('class', 'lines');
 
-    let lineGroup = lines.selectAll('.line-group')
-    .data(sumstat, d => d['name'])
+    let lineGroup =  d3.select('svg').selectAll('.lines').selectAll('.line-group')
+    .data(sumstat, d => {
+        return d['name'].hashCode()
+    })
 
 
     lineGroup.join(
-        enter => enter.append('g')
+        enter => {
+            return enter.append('g')
         .attr('class', 'line-group') 
         .append('path')
-        .attr('class', 'line'),
-        update => update
-        .transition()
-        .duration(750)
+        .attr('class', 'line')
+        .style('opacity', lineOpacity)
+        .style("stroke-width", lineStroke)
+        .style("fill", "none")
+        .attr('marker-end',  (d, i) => {
+            return marker(color(d.values[0].region))
+        })
+        .attr('d', d => line(d.values))
+        .style('stroke', (d, i) => {
+                return color(d.values[0].region);
+            })
+    .attr('transform', 'translate('+margin.left+', '+margin.top+')')
+        },
+        update => {
+        console.log("updating..")
+        
+        svg.selectAll(".yaxis")
+        .transition().duration(500)
+        .call(yAxis);
+
+        return update
+        .call(update => update.transition().delay(600).duration(2000)
         .attr('fill', "red")
         .style("stroke-width", 5)
         .style('stroke', "pink"),
-        exit => exit
-        .style('fill','red')
-        .call(exit => exit.transition()
-                          .remove())
+        )
+        },
+        exit => {
+            exit.call(exit => {
+                // Animate the text value to size=0
+                exit.selectAll('text')
+                    .transition()
+                    .duration(500)
+                    .style('stroke', "pink")
+                    .style('font-size','0em');
+                // Animate the rect's width to 0
+                exit.selectAll('path')
+                    .transition()
+                    .duration(500)
+                    .style('stroke', "pink")
+                    .style('fill', "pink")
+                    .end()                  // after the transition ends,
+                    .then(() => {           // remove the elements in the
+                        exit.remove();      // exit selection
+                    });
+            })
+
+            return exit.remove();
+
+        }
     )
-    .attr('d', d => line(d.values))
-    .style('stroke', (d, i) => {
-        return color(d.values[0].region);
-    })
-    .style('opacity', lineOpacity)
-    .style("stroke-width", lineStroke)
-    .style("fill", "none")
-    .attr('marker-end',  (d, i) => {
-        return marker(color(d.values[0].region))
-    })
-    .attr('transform', 'translate('+margin.left+', '+margin.top+')')
 
     .on("mouseover", function(event, d, i) {
       d3.selectAll('.line')
 					.style('opacity', otherLinesOpacityHover);
       d3.selectAll('.circle')
-					.style('opacity', circleOpacityOnLineHover);
-     d3.selectAll('.country-labels')
-					.style('opacity', circleOpacityOnLineHover);
+					.style('opacity', otherLinesOpacityHover);
+    d3.selectAll("path[className^='line-text']")
+					.style('opacity', otherLinesOpacityHover);
       
       d3.select(this)
         .style('opacity', lineOpacityHover)
         .style("cursor", "pointer");
 
-        svg.selectAll('.line-text-' + d.name)
+        svg.selectAll('.line-text-' + d.name.hashCode())
         .style('opacity', lineOpacityHover)
 
 
@@ -219,13 +244,13 @@ document.addEventListener('DOMContentLoaded', function () {
       d3.selectAll(".line")
 					.style('opacity', lineOpacity);
       d3.selectAll('.circle')
-					.style('opacity', circleOpacity);
-     d3.selectAll('line-text' + i)
-					.style('opacity', circleOpacity);
+					.style('opacity', lineOpacity);
+     d3.selectAll("path[className^='line-text']")
+					.style('opacity', lineOpacity);
       d3.select(this)
         .style("cursor", "none");
 
-        svg.selectAll('.line-text-' + d.name)
+        svg.selectAll('.line-text-' + d.name.hashCode())
         .style('opacity', lineOpacity)
 
     });
@@ -238,13 +263,19 @@ document.addEventListener('DOMContentLoaded', function () {
       .enter()
       .append("text")
       .attr('class', (d,i) => { 
-        return "line-text-" +  d.country})
+        return "line-text-" +  d.country.hashCode()})
       .attr("x", d => xScale(d.year))
       .attr("y", d => yScale(d[selectedAttribute]) + 40)
       .style('fill', (d) => color(d.region))
       .attr("font-size", "12")
       .style('opacity', lineOpacity)
       .text((d)=>d.country)
+
+
+  
+
+    
+
 
  }
 
@@ -277,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function () {
  function splitGlobalDataIntoRegions() {
     globalDevelopmentData.forEach(function (item) {
         let country = item["country"];
-        if (item["year"] >= 1980 && item["year"] <= 2013) {
+        if (item["year"] >= parseDate("1980") && item["year"] <= parseDate("2013")) {
             let region = worldBankRegionMap.get(country);
             item["region"] = region;
             if (region == "South Asia") {
@@ -302,9 +333,8 @@ document.addEventListener('DOMContentLoaded', function () {
 function getDataToDisplay() {
     // deselect the deselect All button if any other checkbox is clicked
     document.getElementById("check2").checked = false
-
-    // initialise data
     lineChartData = []
+    // initialise data
     if (document.getElementById("check3").checked) {
         lineChartData = lineChartData.concat(southAsiaData);
     }
@@ -327,6 +357,7 @@ function getDataToDisplay() {
         lineChartData = lineChartData.concat(northAmericaData);
     }
     console.log(lineChartData.length)
+
 }
 
 function getFilteredData(data) {
@@ -334,6 +365,8 @@ function getFilteredData(data) {
     data.forEach((item => {
         let curr_country = item.country;
         let curr_year = item.year;
+        if (curr_year == null) {
+        }
         if (!country_year_map.has(curr_country)) {
             country_year_map.set(curr_country, curr_year)
         } else if (country_year_map.get(curr_country) < curr_year) {
@@ -343,3 +376,17 @@ function getFilteredData(data) {
     let filteredData = data.filter(item => item.year == country_year_map.get(item.country));
     return filteredData;
 }
+
+String.prototype.hashCode = function() {
+    var hash = "";
+    var chr, i;
+    if (this.length === 0) return hash;
+    for (i = 0; i < this.length; i++) {
+      chr = this.charAt(i);
+      if (chr == " " || chr== "." || chr == "," || chr == "'") {
+        chr = "-"
+      }
+      hash = hash + chr; // Convert to 32bit integer
+    }
+    return hash;
+  }
