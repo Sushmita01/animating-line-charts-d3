@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
              }
              });
              splitGlobalDataIntoRegions();
+             opacityChangeRedraw();
              drawLineChart();
          });
  });
@@ -77,10 +78,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const innerHeight = height - margin.top - margin.bottom;
 
     const selectedAttribute = document.getElementById('attribute-select').value;
-    var slider = document.getElementById("opacity-control");
-    lineOpacity = parseFloat(slider.value);
-    lineOpacityHover = d3.max([lineOpacity + 0.3, 1]);
-    otherLinesOpacityHover = d3.min([lineOpacity - 0.3, 0.1]);
 
     let grouped_by_country = d3.group(lineChartData, d => d.country); // nest function allows to group the calculation per level of a factor
     let sumstat = Array.from(grouped_by_country, ([name, values]) => ({ name, values }));
@@ -216,15 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .call(yAxis);
 
             exit.call(exit => {
-              
-            // //fade out effect for removed data labels
-            // exit.selectAll("text[className^='line-text']")
-            // .transition()
-            // .duration(dataEntryExitTransitionDuration)
-            // .style('opacity', 0)
-            // .end()                  // after the transition ends,
-       
-
+    
             //fade out effect for removed data lines
             exit.selectAll('path')
                     .transition()
@@ -244,8 +233,8 @@ document.addEventListener('DOMContentLoaded', function () {
 					.style('opacity', otherLinesOpacityHover);
       d3.selectAll('.circle')
 					.style('opacity', otherLinesOpacityHover);
-    d3.selectAll("text[className^='line-text']")
-                    .style("stroke", "pink")
+    d3.selectAll(".data-labels")
+                    .style("fill", "pink")
 					.style('opacity', otherLinesOpacityHover);
       
       d3.select(this)
@@ -262,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					.style('opacity', lineOpacity);
       d3.selectAll('.circle')
 					.style('opacity', lineOpacity);
-     d3.selectAll("text[className^='line-text']")
+     d3.selectAll(".data-labels")
 					.style('opacity', lineOpacity);
       d3.select(this)
         .style("cursor", "none");
@@ -288,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .attr('class', 'data-labels') 
         .append("text")
         .attr('class', (d,i) => {
-         "line-text-" +  d.values[0].country.hashCode()})
+         "line-text-" +  d.name.hashCode()})
         .attr("x", d => xScale(d.values[0].year))
         .attr("y", d => yScale(d.values[0][selectedAttribute]) + 40)
         .style('fill', (d) => color(d.values[0].region))
@@ -459,9 +448,9 @@ String.prototype.hashCode = function() {
   function opacityChangeRedraw(e) {
     var slider = document.getElementById("opacity-control");
     lineOpacity = parseFloat(slider.value);
-    lineOpacityHover = d3.min([lineOpacity + 0.2, 1]);
-    otherLinesOpacityHover = d3.max([lineOpacity - 0.2, 0.1]);
-
+    lineOpacityHover = d3.min([lineOpacity + 0.3, 1]);
+    otherLinesOpacityHover = d3.max([lineOpacity - 0.3, 0.1]);
+    console.log(lineOpacity, otherLinesOpacityHover)
     d3.selectAll(".line")
 				.style('opacity', lineOpacity);
     d3.selectAll('.circle')
