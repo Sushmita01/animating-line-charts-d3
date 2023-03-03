@@ -21,8 +21,8 @@ var circleRadiusHover = 6;
 var duration = 250;
 var axisTransitionDuration = 600;
 var dataEntryExitTransitionDuration = 600;
-var yLabelOffset = 40;
-var xLabelOffset = 55;
+var yLabelOffset = 50;
+var xLabelOffset = 65;
 
 // defining color scheme
 // var res = ["South Asia", "Europe & Central Asia", "Middle East & North Africa", "Sub-Saharan Africa", "Latin America & Caribbean",
