@@ -254,14 +254,13 @@ document.addEventListener('DOMContentLoaded', function () {
 					.style('opacity', otherLinesOpacityHover);
       d3.selectAll('.circle')
 					.style('opacity', otherLinesOpacityHover);
-    d3.selectAll("text[class^='line-text']")
+    d3.selectAll(".data-labels")
 					.style('opacity', otherLinesOpacityHover);
       
       d3.select(this)
         .style('opacity', lineOpacityHover)
         .style("cursor", "pointer");
 
-        console.log('.line-text-' + d.name.hashCode())
         d3.selectAll('.line-text-' + d.name.hashCode())
         .style('opacity', lineOpacityHover) //TO-DO
 
@@ -272,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					.style('opacity', lineOpacity);
         d3.selectAll('.circle')
 					.style('opacity', lineOpacity);
-        d3.selectAll("text[class^='line-text']")
+        d3.selectAll(".data-labels")
 					.style('opacity', lineOpacity);
         d3.select(this)
         .style("cursor", "none");
@@ -291,11 +290,10 @@ document.addEventListener('DOMContentLoaded', function () {
     linesText
       .join(
         enter => {
-        console.log("enter", enter)
         enter.append('g')
         .append("text")
         .attr('class', (d,i) => {
-            return "line-text-" +  d.name.hashCode()})    
+            return "data-labels line-text-" +  d.name.hashCode()})    
         .attr("x", d => xScale(d.values[0].year) + xLabelOffset)
         .attr("y", d => yScale(d.values[0][selectedAttribute]) + yLabelOffset)
         .style('fill', (d) => color(d.values[0].region))
@@ -319,8 +317,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             update.call(update => {
                 //moves lines to correct position depending on new y axis
-                console.log("update", update)
-                update.selectAll("text")
+                update.selectAll(".data-labels")
                         .transition()
                         .duration(axisTransitionDuration)
                         .attr("x", d => xScale(d.values[0].year) + xLabelOffset)
@@ -330,9 +327,8 @@ document.addEventListener('DOMContentLoaded', function () {
             },
         exit => {
             exit.call(exit => {
-                console.log("exited", exit)
             //fade out effect for removed data labels
-            exit.selectAll("text")
+            exit.selectAll(".data-labels")
             .transition()
             .duration(dataEntryExitTransitionDuration)
             .style('opacity', 0)
@@ -473,7 +469,7 @@ String.prototype.hashCode = function() {
 				.style('opacity', lineOpacity);
     d3.selectAll('.circle')
 				.style('opacity', lineOpacity);
-    d3.selectAll("text[class^='line-text']")
+    d3.selectAll(".data-labels")
 					.style('opacity', lineOpacity);
 
   }
