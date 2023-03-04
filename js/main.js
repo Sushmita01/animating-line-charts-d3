@@ -254,27 +254,27 @@ document.addEventListener('DOMContentLoaded', function () {
 					.style('opacity', otherLinesOpacityHover);
       d3.selectAll('.circle')
 					.style('opacity', otherLinesOpacityHover);
-    d3.selectAll(".data-labels")
-                    .style("fill", "pink")
+    d3.selectAll("text[class^='line-text']")
 					.style('opacity', otherLinesOpacityHover);
       
       d3.select(this)
         .style('opacity', lineOpacityHover)
         .style("cursor", "pointer");
 
+        console.log('.line-text-' + d.name.hashCode())
         d3.selectAll('.line-text-' + d.name.hashCode())
         .style('opacity', lineOpacityHover) //TO-DO
 
 
     })
   .on("mouseout", function(event, d, i) {
-      d3.selectAll(".line")
+        d3.selectAll(".line")
 					.style('opacity', lineOpacity);
-      d3.selectAll('.circle')
+        d3.selectAll('.circle')
 					.style('opacity', lineOpacity);
-     d3.selectAll(".data-labels")
+        d3.selectAll("text[class^='line-text']")
 					.style('opacity', lineOpacity);
-      d3.select(this)
+        d3.select(this)
         .style("cursor", "none");
 
     });
@@ -293,10 +293,9 @@ document.addEventListener('DOMContentLoaded', function () {
         enter => {
         console.log("enter", enter)
         enter.append('g')
-        .attr('class', 'data-labels') 
         .append("text")
         .attr('class', (d,i) => {
-         "line-text-" +  d.name.hashCode()})
+            return "line-text-" +  d.name.hashCode()})    
         .attr("x", d => xScale(d.values[0].year) + xLabelOffset)
         .attr("y", d => yScale(d.values[0][selectedAttribute]) + yLabelOffset)
         .style('fill', (d) => color(d.values[0].region))
@@ -447,7 +446,6 @@ function getFilteredData(data) {
         }
     }));
     let filteredData = data.filter(item => item.year == country_year_map.get(item.country));
-    console.log("filteredData", filteredData)
     return filteredData;
 }
 
@@ -471,12 +469,11 @@ String.prototype.hashCode = function() {
     lineOpacity = parseFloat(slider.value);
     lineOpacityHover = d3.min([lineOpacity + 0.3, 1]);
     otherLinesOpacityHover = d3.max([lineOpacity - 0.3, 0.1]);
-    console.log(lineOpacity, otherLinesOpacityHover)
     d3.selectAll(".line")
 				.style('opacity', lineOpacity);
     d3.selectAll('.circle')
 				.style('opacity', lineOpacity);
-    d3.selectAll(".data-labels")
+    d3.selectAll("text[class^='line-text']")
 					.style('opacity', lineOpacity);
 
   }
