@@ -64,12 +64,13 @@ document.addEventListener('DOMContentLoaded', function () {
              });
              splitGlobalDataIntoRegions();
              opacityChangeRedraw();
-             drawLineChart();
+             drawLineChart(false);
          });
  });
 
- function drawLineChart() {
+ function drawLineChart(play) {
     getDataToDisplay();
+
     const svg = d3.select('svg');
     // get the width and height of the SVG
     const width = +svg.style('width').replace('px','');
@@ -157,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
 
+
     /* Add line into SVG */
     var line = d3.line()
             .x(d => xScale(d.year))
@@ -179,7 +181,12 @@ document.addEventListener('DOMContentLoaded', function () {
         .attr('class', 'line-group') 
         .append('path')
         .attr('class', 'line')
-        .style('opacity', 0)
+        .style('opacity', () => {
+            if (play) {
+                return lineOpacity;
+            }
+            return 0;
+        })
         .style("stroke-width", lineStroke)
         .style("fill", "none")
         .attr('marker-end',  (d, i) => {
@@ -193,12 +200,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         enter.call(enter => {
 
-            //fade in effect for new data lines
-            enter.selectAll('path')
-                    .transition()
-                    .delay(axisTransitionDuration)
-                    .duration(dataEntryExitTransitionDuration)
-                    .style('opacity', lineOpacity)
+            if (play) {
+                transitionThroughYears(enter.selectAll("path"));
+            } else {
+                // fade in effect for new data lines
+                enter.selectAll('path')
+                        .transition()
+                        .delay(axisTransitionDuration)
+                        .duration(dataEntryExitTransitionDuration)
+                        .style('opacity', lineOpacity)
+            }
+
+
         }
         )
         },
@@ -299,17 +312,26 @@ document.addEventListener('DOMContentLoaded', function () {
         .style('fill', (d) => color(d.values[0].region))
         .attr("font-size", "12")
         .attr("font-weight", "900")
-        .style('opacity', 0)
+        .style('opacity', () => {
+            if (play) {
+                return lineOpacity;
+            }
+            return 0;
+        })
         .text((d)=>d.values[0].country)
 
         enter.call(enter => {
             //fade in effect for new data lines
 
-            enter.selectAll('text')
-                    .transition()
-                    .delay(axisTransitionDuration)
-                    .duration(dataEntryExitTransitionDuration)
-                    .style('opacity', lineOpacity)
+            if (play) {
+                transitionThroughYears(enter.selectAll("path"));
+            } else {
+                enter.selectAll('text')
+                        .transition()
+                        .delay(axisTransitionDuration)
+                        .duration(dataEntryExitTransitionDuration)
+                        .style('opacity', lineOpacity)
+            }
         }
         )
         },
@@ -340,13 +362,6 @@ document.addEventListener('DOMContentLoaded', function () {
             })
         }
         )
-      
-
-
-  
-
-    
-
 
  }
 
@@ -473,3 +488,25 @@ String.prototype.hashCode = function() {
 					.style('opacity', lineOpacity);
 
   }
+
+  function animateThroughYears() {
+    d3.select('svg').selectAll('.lines').remove();
+    drawLineChart(true);
+
+  }
+
+  function tweenDash() {
+    var l = this.getTotalLength(),
+        i = d3.interpolateString("0," + l, l + "," + l);
+    return function (t) { return i(t); };
+}
+
+function transitionThroughYears(selection) {
+    selection.each(function() {
+        d3.select(this).transition()
+            .duration(1500)
+            .attrTween("stroke-dasharray", tweenDash);
+    })
+};
+
+

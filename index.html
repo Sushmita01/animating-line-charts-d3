@@ -25,7 +25,7 @@
                     <div id="control-panel" class="well">
                         <div id="global-attribute">
                             Select global attribute
-                            <select class="form-select" aria-label="Default select example" id="attribute-select" onchange="drawLineChart()">
+                            <select class="form-select" aria-label="Default select example" id="attribute-select" onchange="drawLineChart(false)">
                                 <option value="birth_rate">Birth Rate</option>
                                 <option value="death_rate">Death Rate</option>
                                 <option value="fertility_rate">Fertility Rate</option>
@@ -54,43 +54,43 @@
                                 </label>
                               </div>
                               <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="south_asia" id="check3" onchange="drawLineChart()">
+                                <input class="form-check-input" type="checkbox" value="south_asia" id="check3" onchange="drawLineChart(false)">
                                 <label class="form-check-label" for="check3">
                                 South Asia
                                 </label>
                               </div>
                               <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="eu_central_asia" id="check4" onchange="drawLineChart()">
+                                <input class="form-check-input" type="checkbox" value="eu_central_asia" id="check4" onchange="drawLineChart(false)">
                                 <label class="form-check-label" for="check4">
                                 Europe & Central Asia
                                 </label>
                               </div>
                               <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="mid_east" id="check5" onchange="drawLineChart()">
+                                <input class="form-check-input" type="checkbox" value="mid_east" id="check5" onchange="drawLineChart(false)">
                                 <label class="form-check-label" for="check5">
                                     Middle East & North Africa
                                 </label>
                               </div>
                               <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="africa" id="check6" onchange="drawLineChart()">
+                                <input class="form-check-input" type="checkbox" value="africa" id="check6" onchange="drawLineChart(false)">
                                 <label class="form-check-label" for="check6">
                                     Sub-Saharan Africa
                                 </label>
                               </div>
                               <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="caribbean" id="check7" onchange="drawLineChart()">
+                                <input class="form-check-input" type="checkbox" value="caribbean" id="check7" onchange="drawLineChart(false)">
                                 <label class="form-check-label" for="check7">
                                     Latin America & Caribbean
                                 </label>
                               </div>
                               <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="east_asia" id="check8" onchange="drawLineChart()">
+                                <input class="form-check-input" type="checkbox" value="east_asia" id="check8" onchange="drawLineChart(false)">
                                 <label class="form-check-label" for="check8">
                                     East Asia & Pacific
                                 </label>
                               </div>
                               <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="north_america" id="check9" onchange="drawLineChart()">
+                                <input class="form-check-input" type="checkbox" value="north_america" id="check9" onchange="drawLineChart(false)">
                                 <label class="form-check-label" for="check9">
                                     North America
                                 </label>
@@ -103,7 +103,7 @@
                         </div>
                         <hr/>
                         <div id="play">
-                            <button type="button" id="play-button" class="btn">Play</button>
+                            <button type="button" id="play-button" class="btn" onclick="animateThroughYears()">Play</button>
                         </div>                          
                     </div>
                 </div>
