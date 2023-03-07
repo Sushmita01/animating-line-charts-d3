@@ -13,7 +13,7 @@ var northAmericaData = [];
 var lineChartData = [];
 var lineOpacity = "0.6";
 var lineOpacityHover = "0.8";
-var otherLinesOpacityHover = "0.4";
+var otherLinesOpacityHover = "0.3";
 var lineStroke = "2px";
 
 var circleRadius = 3;
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var line = d3.line()
             .x(d => xScale(d.year))
             .y(d => yScale(d[selectedAttribute]))
-            .curve(d3.curveMonotoneX);
+            .curve(d3.curveCatmullRom);
 
   
     let lines = svg.append('g')
@@ -477,7 +477,7 @@ String.prototype.hashCode = function() {
     var slider = document.getElementById("opacity-control");
     lineOpacity = parseFloat(slider.value);
     lineOpacityHover = (lineOpacity + 0.2).toFixed(2);
-    otherLinesOpacityHover = (lineOpacity - 0.2).toFixed(2);
+    otherLinesOpacityHover = (lineOpacity - 0.3).toFixed(2);
     if (lineOpacityHover > 1) {
         lineOpacityHover = 1;
     } 
