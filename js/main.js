@@ -11,9 +11,9 @@ var caribbeanData = [];
 var eastAsiaData = [];
 var northAmericaData = [];
 var lineChartData = [];
-var lineOpacity = "0.3";
-var lineOpacityHover = "0.6";
-var otherLinesOpacityHover = "0.1";
+var lineOpacity = "0.6";
+var lineOpacityHover = "0.8";
+var otherLinesOpacityHover = "0.4";
 var lineStroke = "2px";
 
 var circleRadius = 3;
@@ -258,26 +258,23 @@ document.addEventListener('DOMContentLoaded', function () {
         .duration(axisTransitionDuration)
         .call(yAxis);   
         })
-    }
-    );
+    });
 
     d3.selectAll('path')
     .on("mouseover", function(event, d, i) {
-      d3.selectAll('.line')
+        d3.selectAll('.line')
 					.style('opacity', otherLinesOpacityHover);
-      d3.selectAll('.circle')
+        d3.selectAll('.circle')
 					.style('opacity', otherLinesOpacityHover);
-    d3.selectAll(".data-labels")
-					.style('opacity', otherLinesOpacityHover);
+        d3.selectAll(".data-labels")
+					.style('fill-opacity', otherLinesOpacityHover);
       
-      d3.select(this)
+        d3.select(this)
         .style('opacity', lineOpacityHover)
         .style("cursor", "pointer");
 
         d3.selectAll('.line-text-' + d.name.hashCode())
-        .style('opacity', lineOpacityHover) //TO-DO
-
-
+        .style('fill-opacity', lineOpacityHover) //TO-DO
     })
   .on("mouseout", function(event, d, i) {
         d3.selectAll(".line")
@@ -285,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function () {
         d3.selectAll('.circle')
 					.style('opacity', lineOpacity);
         d3.selectAll(".data-labels")
-					.style('opacity', lineOpacity);
+					.style('fill-opacity', lineOpacity);
         d3.select(this)
         .style("cursor", "none");
 
@@ -304,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .join(
         enter => {
         enter.append('g')
+        .attr('class', "data-labels")    
         .append("text")
         .attr('class', (d,i) => {
             return "data-labels line-text-" +  d.name.hashCode()})    
@@ -312,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .style('fill', (d) => color(d.values[0].region))
         .attr("font-size", "12")
         .attr("font-weight", "900")
-        .style('opacity', () => {
+        .style('fill-opacity', () => {
             if (play) {
                 return lineOpacity;
             }
@@ -330,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         .transition()
                         .delay(axisTransitionDuration)
                         .duration(dataEntryExitTransitionDuration)
-                        .style('opacity', lineOpacity)
+                        .style('fill-opacity', lineOpacity)
             }
         }
         )
@@ -353,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function () {
             exit.selectAll(".data-labels")
             .transition()
             .duration(dataEntryExitTransitionDuration)
-            .style('opacity', 0)
+            .style('fill-opacity', 0)
             .end()                  // after the transition ends,
             .then(() => {           // remove the elements in the
                 exit.remove();      // exit selection
@@ -375,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("check8").checked = true;
         document.getElementById("check9").checked = true;
     }
-    drawLineChart();
+    drawLineChart(false);
  }
 
  function deselectAll() {
@@ -388,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("check8").checked = false;
         document.getElementById("check9").checked = false;
     }
-    drawLineChart();
+    drawLineChart(false);
  }
 
  function splitGlobalDataIntoRegions() {
@@ -478,14 +476,23 @@ String.prototype.hashCode = function() {
   function opacityChangeRedraw(e) {
     var slider = document.getElementById("opacity-control");
     lineOpacity = parseFloat(slider.value);
-    lineOpacityHover = d3.min([lineOpacity + 0.3, 1]);
-    otherLinesOpacityHover = d3.max([lineOpacity - 0.3, 0.1]);
+    lineOpacityHover = (lineOpacity + 0.2).toFixed(2);
+    otherLinesOpacityHover = (lineOpacity - 0.2).toFixed(2);
+    if (lineOpacityHover > 1) {
+        lineOpacityHover = 1;
+    } 
+    if (otherLinesOpacityHover < 0.1) {
+        otherLinesOpacityHover = 0.1;
+    }
     d3.selectAll(".line")
 				.style('opacity', lineOpacity);
     d3.selectAll('.circle')
 				.style('opacity', lineOpacity);
     d3.selectAll(".data-labels")
-					.style('opacity', lineOpacity);
+					.style('fill-opacity', lineOpacity);
+
+    console.log("lineOpacityHover", lineOpacityHover);
+    console.log("otherLinesOpacityHover", otherLinesOpacityHover)
 
   }
 

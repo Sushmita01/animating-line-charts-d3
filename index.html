@@ -14,17 +14,17 @@
             <hr>
             <div class="row">
                 <div class="col-md-3">
-                        <h5 class="text-center">Control Panel</h3>
+                        <h5 class="text-center panel-heading">Control Panel</h3>
                 </div>
                 <div class="col-md-9">
-                    <h5 class="text-center">Trend over the years</h3>
+                    <h5 class="text-center panel-heading">Trend over the years</h3>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-3">
                     <div id="control-panel" class="well">
                         <div id="global-attribute">
-                            Select global attribute
+                            <div class="subheading">Select global attribute</div>
                             <select class="form-select" aria-label="Default select example" id="attribute-select" onchange="drawLineChart(false)">
                                 <option value="birth_rate">Birth Rate</option>
                                 <option value="death_rate">Death Rate</option>
@@ -40,7 +40,7 @@
                         </div>
                         <hr/>
                         <div id="region-select">
-                            Select geographic region
+                            <div class="subheading">Select geographic region</div>
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="all" id="check1" onchange="selectAll()">
                                 <label class="form-check-label" for="check1">
@@ -98,8 +98,8 @@
                         </div>
                         <hr/>
                         <div id="opacity">
-                            <label for="opacity-control" class="form-label">Select Opacity</label>
-                            <input type="range" class="form-range" value=0.3 step=0.1 min=0.2 max=1 id="opacity-control" onchange="opacityChangeRedraw(event)">
+                            <label for="opacity-control" class="form-label subheading">Select Opacity</label>
+                            <input type="range" class="form-range" value=0.6 step=0.1 min=0.2 max=1 id="opacity-control" onchange="opacityChangeRedraw(event)">
                         </div>
                         <hr/>
                         <div id="play">
