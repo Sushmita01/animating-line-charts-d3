@@ -1,4 +1,4 @@
-# Homework #3: Global Developments
+# Animating Line Charts with D3: Global Developments dataset
 
 We apply knowledge about D3 animations and joins to create a multi-line chart (i.e., a line chart with multiple lines) that interactively updates as countries and attributes for the dataset are changed. 
 
